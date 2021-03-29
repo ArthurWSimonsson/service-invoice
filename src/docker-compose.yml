@@ -1,0 +1,10 @@
+version: '3.9'
+services:
+  invoice:
+    build: .
+    ports:
+      - "3002:3002"
+  client:
+    image: "arthurws/service-client"
+  transaction:
+    image: "arthurws/service-transaction"

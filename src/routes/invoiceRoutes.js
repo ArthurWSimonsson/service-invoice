@@ -35,8 +35,9 @@ const routes = async (app, options) => {
             }
             reply.code(400).send({
                 status:400,
-                msg: 'Invoice invalid',
-                err: err.msg
+                msg: 'Invoice invalid - route',
+                err: await err,
+                message: await err.message
             })
         }
     })
