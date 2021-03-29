@@ -1,0 +1,32 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: invoice
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: invoice
+  template:
+    metadata:
+      labels:
+        app: invoice
+    spec:
+      containers:
+        - name: invoice
+          image: arthurws/invoice
+          ports:
+          - containerPort: 3002
+          imagePullPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: invoice
+spec:
+  selector:
+    app: invoice
+  ports:
+    - port: 1000
+      targetPort: 3002
+  type: LoadBalancer
