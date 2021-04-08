@@ -28,8 +28,7 @@ const invoiceSchema = new mongoose.Schema({
     },
     clientUUID: {
         type: String,
-        required: true,
-        unique: true
+        required: true
     },
     payments: [
         {
