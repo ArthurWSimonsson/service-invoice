@@ -7,8 +7,26 @@ exports.addTransaction = async(invoice) => {
     //     console.log('invoice is ', invoice)
     // }
 
-    const result = await fetch('http://localhost:3004/api/transaction', {
-      // const result = await fetch('http://transaction:1002/api/transaction', {
+    await fetch('http://localhost:3004/api/transaction', {
+    // await fetch('http://transaction:1002/api/transaction', {
+    method: 'POST',
+    headers: {
+      'Accept': 'application/json',
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(invoice)
+  });
+}
+
+exports.removeTransaction = async(invoice) => {
+
+  // if (status === 'future') {
+  //     invoice.future = true
+  //     console.log('invoice is ', invoice)
+  // }
+
+    await fetch('http://localhost:3004/api/transaction', {
+    // await fetch('http://transaction:1002/api/transaction', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',

@@ -32,12 +32,18 @@ const invoiceSchema = new mongoose.Schema({
     },
     payments: [
         {
-            type: Number
+            amount: { type: Number, required: true }
         }
-    ],
+    ]
+})
+
+const paidInvoiceSchema = new mongoose.Schema({
+    invoiceNr: {
+        type: Number,
+        required: true,
+        unique: true
+    },
     paidDate: Date
 })
 
-module.exports = mongoose.model('Invoice', invoiceSchema)
-
-
+module.exports = { Invoice: mongoose.model('Invoice', invoiceSchema), PaidInvoice: mongoose.model('PaidInvoice', paidInvoiceSchema) }
