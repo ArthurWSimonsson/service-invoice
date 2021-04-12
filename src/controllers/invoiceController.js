@@ -24,7 +24,7 @@ exports.addInvoice = async req => {
             result = await Invoice.findByIdAndUpdate({_id: result._id}, {paidDate: new Date()}, {new: true})
         }
         else {
-           transactionController.addTransaction(result)
+           await transactionController.addTransaction(result)
         }
 
         return result
