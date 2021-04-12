@@ -1,11 +1,12 @@
 /* 
 Saga Options: {
     preventFailedBegining (true) : Throw error when calling begin() after the Saga has failed
+    simulateFailure : Steps to fail
 } 
 */
 
 class Saga {
-    constructor(options = {preventFailedBegining: true}) {
+    constructor(options = {preventFailedBegining: true, simulateFailure: {}}) {
         this._failed = false;
         this._succeeded = false;
         this._entries = [];
@@ -29,13 +30,13 @@ class Saga {
     _fail(step) { //Private
         this._failed = true;
         if(step)
-            this.onStepFailed({failedStep: step});
+            this.onStepFailed({failedStep: {error: step.error, name: step.name}});
         let failedSteps = [];
         for(let entry of this._entries) {
             if(!entry.hasFailed() && !entry.hasSucceeded())
                 return;
             if(entry.hasFailed())
-                failedSteps.push(entry);
+                failedSteps.push({error: entry.getError(), name: entry.getName()});
         }
         for(let entry of this._entries)
             if(entry.hasSucceeded())
@@ -44,7 +45,9 @@ class Saga {
         this._promiseReject({failedSteps: failedSteps});
     }
 
-    _success(name) { //Private
+    _success(step) { //Private
+        if(this._opts.simulateFailure[step.getName()])
+            return step.fail(this._opts.simulateFailure[step.getName()]);
         if(this.hasFailed())
             return this._fail(null);
 
@@ -82,11 +85,12 @@ class SagaStep {
 
     success() { //Public
         this._succeeded = true;
-        this._saga._success(this._name);
+        this._saga._success(this);
     }
 
     fail(e = null) { //Public
         this._failed = true;
+        this._succeeded = false;
         this._error = e;
         this._saga._fail(this);
     }

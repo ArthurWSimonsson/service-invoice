@@ -6,7 +6,7 @@ const mongoose = require('mongoose');
 
 exports.addInvoice = async invoice => {
 
-    let saga = new Saga();
+    let saga = new Saga({simulateFailure: {"create invoice": "Test error"}});
 
     let createInvoiceStep = saga.begin({name: "create invoice"});
     let updatePaymentStep = saga.begin({name: "update payment"});
@@ -36,7 +36,7 @@ exports.addInvoice = async invoice => {
     let paymentObjectId = new mongoose.Types.ObjectId();
 
     updatePaymentStep.onRepair = () => {
-        await Invoice.updateOne (
+        Invoice.updateOne (
             { _id: result._id },
             { $pull: { payments: {_id: paymentObjectId} } }
         );
@@ -72,15 +72,29 @@ exports.addInvoice = async invoice => {
     }
 
 
+    let addTransactionResult;
+
+    addTransactionStep.onRepair = () => {
+        if(!addTransactionResult)
+            return;
+        if(addTransactionResult.new)
+            transactionController.removeTransaction(result)
+        else if(!addTransactionResult.new && addTransactionResult.old)
+            transactionController.setTransactionAmount(addTransactionResult.old)
+    };
+
     try {
         if (totalPayed < invoice.total)
-            await transactionController.addTransaction(result);
+            addTransactionResult = await transactionController.addTransaction(result).data;
         addTransactionStep.success();
     }
     catch(err) {
         addTransactionStep.fail(err);
         throw boom.boomify(err);
     }
+
+
+    await saga.promise();
 
     return result;
 
