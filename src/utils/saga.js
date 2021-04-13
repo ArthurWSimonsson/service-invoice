@@ -30,7 +30,7 @@ class Saga {
     _fail(step) { //Private
         this._failed = true;
         if(step)
-            this.onStepFailed({failedStep: {error: step.error, name: step.name}});
+            this.onStepFailed({failedStep: {error: step.getError(), name: step.getName()}});
         let failedSteps = [];
         for(let entry of this._entries) {
             if(!entry.hasFailed() && !entry.hasSucceeded())
@@ -39,8 +39,10 @@ class Saga {
                 failedSteps.push({error: entry.getError(), name: entry.getName()});
         }
         for(let entry of this._entries)
-            if(entry.hasSucceeded())
+            if(entry.hasSucceeded()) {
+                console.log("repair", entry);
                 entry.onRepair();
+            }
         this.onFinallyFailed({failedSteps: failedSteps});
         this._promiseReject({failedSteps: failedSteps});
     }

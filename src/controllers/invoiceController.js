@@ -6,23 +6,22 @@ const mongoose = require('mongoose');
 
 exports.addInvoice = async invoice => {
 
-    let saga = new Saga({simulateFailure: {"create invoice": "Test error"}});
+    let saga = new Saga(); // {simulateFailure: {"create invoice": "Test error"}}
 
-    let createInvoiceStep = saga.begin({name: "create invoice"});
-    let updatePaymentStep = saga.begin({name: "update payment"});
-    let updateInvoiceStep = saga.begin({name: "update invoice"});
-    let addTransactionStep = saga.begin({name: "add transaction"});
+    saga.onStepFailed = (s) => console.log(s);
 
     
     let {invoiceNr} = invoice;
     let result;
 
     try { result = await Invoice.findOne({invoiceNr}); }
-    catch(err) { throw boom.boomify(err); }
+    catch(err) { throw err; }
 
-    createInvoiceStep.onRepair = () => Invoice.deleteOne({invoiceNr});
+    let createInvoiceStep = saga.begin({name: "create invoice"});
+    createInvoiceStep.onRepair = async () => console.log( "REPAIR DEL", await Invoice.deleteOne({invoiceNr}) );
 
     try {
+        //throw "ERROR1";
         if (!result)
             result = await new Invoice(invoice).save();
         
@@ -30,11 +29,12 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         createInvoiceStep.fail(err);
-        throw boom.boomify(err);
+        throw err;//boom.boomify(err);
     }
 
     let paymentObjectId = new mongoose.Types.ObjectId();
 
+    let updatePaymentStep = saga.begin({name: "update payment"});
     updatePaymentStep.onRepair = () => {
         Invoice.updateOne (
             { _id: result._id },
@@ -43,6 +43,7 @@ exports.addInvoice = async invoice => {
     };
 
     try {
+        //throw "ERROR2";
         await Invoice.updateOne (
             { _id: result._id },
             { $push: { payments: {amount: invoice.payment, _id: paymentObjectId} } }
@@ -51,14 +52,16 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         updatePaymentStep.fail(err);
-        throw boom.boomify(err);
+        throw err;//boom.boomify(err);
     }
 
     let totalPayed;
 
+    let updateInvoiceStep = saga.begin({name: "update invoice"});
     updateInvoiceStep.onRepair = () => PaidInvoice.deleteOne({invoiceNr});
 
     try {
+        //throw "ERROR3";
         result = await Invoice.findById(result._id);
         totalPayed = result.payments.reduce((a, b) => a + b, 0);
 
@@ -68,12 +71,13 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         updateInvoiceStep.fail(err);
-        throw boom.boomify(err);
+        throw err;//boom.boomify(err);
     }
 
 
     let addTransactionResult;
 
+    let addTransactionStep = saga.begin({name: "add transaction"});
     addTransactionStep.onRepair = () => {
         if(!addTransactionResult)
             return;
@@ -84,13 +88,14 @@ exports.addInvoice = async invoice => {
     };
 
     try {
+        //throw "ERROR4";
         if (totalPayed < invoice.total)
             addTransactionResult = await transactionController.addTransaction(result).data;
         addTransactionStep.success();
     }
     catch(err) {
         addTransactionStep.fail(err);
-        throw boom.boomify(err);
+        throw err;//boom.boomify(err);
     }
 
 
@@ -113,6 +118,6 @@ exports.getInvoices = async () => {
         return invoices;
     }
     catch(err) {
-        throw boom.boomify(err);
+        throw err;//boom.boomify(err);
     }
 }
