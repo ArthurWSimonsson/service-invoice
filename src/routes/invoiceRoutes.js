@@ -14,7 +14,7 @@ const routes = async (app, options) => {
             validatedInvoice = await clientController.addClientUUID(validatedInvoice)
             validatedInvoice = await exchangeController.currencyExchange(validatedInvoice)
 
-            await transactionController.addTransaction(validatedInvoice)
+            //await transactionController.addTransaction(validatedInvoice)
 
             const invoice = await invoiceController.addInvoice(validatedInvoice)
 

@@ -1,45 +1,123 @@
-const Invoice = require('../models/Invoice')
-const boom = require('boom')
-const transactionController = require('./transactionController')
+const {Invoice, PaidInvoice} = require('../models/Invoice');
+const boom = require('boom');
+const transactionController = require('./transactionController');
+const {Saga} = require("../utils/saga");
+const mongoose = require('mongoose');
 
-exports.addInvoice = async req => {
+exports.addInvoice = async invoice => {
+
+    let saga = new Saga(); // {simulateFailure: {"create invoice": "Test error"}}
+
+    saga.onStepFailed = (s) => console.log(s);
+
+    
+    let {invoiceNr} = invoice;
+    let result;
+
+    try { result = await Invoice.findOne({invoiceNr}); }
+    catch(err) { throw err; }
+
+    let createInvoiceStep = saga.begin({name: "create invoice"});
+    createInvoiceStep.onRepair = async () => console.log( "REPAIR DEL", await Invoice.deleteOne({invoiceNr}) );
+
     try {
-        let invoice = req
-        let invoiceNr = invoice.invoiceNr
-        let result = await Invoice.findOne({invoiceNr})
-
-        if (!result) {
-            result = await new Invoice(invoice).save()
-        }
-
-        await Invoice.updateOne(
-            {_id: result._id},
-            {$push: {payments: invoice.payment}}
-            )
-
-        result = await Invoice.findById(result._id)
-        let totalPayed = result.payments.reduce((a,b) => a + b, 0)
-
-        if (totalPayed >= invoice.total) {
-            result = await Invoice.findByIdAndUpdate({_id: result._id}, {paidDate: new Date()}, {new: true})
-        }
-        else {
-           await transactionController.addTransaction(result)
-        }
-
-        return result
+        //throw "ERROR1";
+        if (!result)
+            result = await new Invoice(invoice).save();
+        
+        createInvoiceStep.success();
     }
     catch(err) {
-        throw boom.boomify(err)
+        createInvoiceStep.fail(err);
+        throw err;//boom.boomify(err);
     }
+
+    let paymentObjectId = new mongoose.Types.ObjectId();
+
+    let updatePaymentStep = saga.begin({name: "update payment"});
+    updatePaymentStep.onRepair = () => {
+        Invoice.updateOne (
+            { _id: result._id },
+            { $pull: { payments: {_id: paymentObjectId} } }
+        );
+    };
+
+    try {
+        //throw "ERROR2";
+        await Invoice.updateOne (
+            { _id: result._id },
+            { $push: { payments: {amount: invoice.payment, _id: paymentObjectId} } }
+        );
+        updatePaymentStep.success();
+    }
+    catch(err) {
+        updatePaymentStep.fail(err);
+        throw err;//boom.boomify(err);
+    }
+
+    let totalPayed;
+
+    let updateInvoiceStep = saga.begin({name: "update invoice"});
+    updateInvoiceStep.onRepair = () => PaidInvoice.deleteOne({invoiceNr});
+
+    try {
+        //throw "ERROR3";
+        result = await Invoice.findById(result._id);
+        totalPayed = result.payments.reduce((a, b) => a + b, 0);
+
+        if (totalPayed >= invoice.total)
+            await new PaidInvoice({ invoiceNr: invoiceNr, paidDate: new Date() }).save();
+        updateInvoiceStep.success();
+    }
+    catch(err) {
+        updateInvoiceStep.fail(err);
+        throw err;//boom.boomify(err);
+    }
+
+
+    let addTransactionResult;
+
+    let addTransactionStep = saga.begin({name: "add transaction"});
+    addTransactionStep.onRepair = () => {
+        if(!addTransactionResult)
+            return;
+        if(addTransactionResult.new)
+            transactionController.removeTransaction(result)
+        else if(!addTransactionResult.new && addTransactionResult.old)
+            transactionController.setTransactionAmount(addTransactionResult.old)
+    };
+
+    try {
+        //throw "ERROR4";
+        if (totalPayed < invoice.total)
+            addTransactionResult = await transactionController.addTransaction(result).data;
+        addTransactionStep.success();
+    }
+    catch(err) {
+        addTransactionStep.fail(err);
+        throw err;//boom.boomify(err);
+    }
+
+
+    await saga.promise();
+
+    return result;
+
+
+    /*try {
+
+    }
+    catch(err) {
+        throw boom.boomify(err);
+    }*/
 }
 
 exports.getInvoices = async () => {
     try {
-        const invoices = await Invoice.find()
-        return invoices
+        const invoices = await Invoice.find();
+        return invoices;
     }
     catch(err) {
-        throw boom.boomify(err)
+        throw err;//boom.boomify(err);
     }
 }
