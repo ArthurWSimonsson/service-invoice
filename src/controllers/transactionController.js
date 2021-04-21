@@ -2,13 +2,8 @@ const fetch = require('node-fetch');
 
 exports.addTransaction = async(invoice) => {
 
-    // if (status === 'future') {
-    //     invoice.future = true
-    //     console.log('invoice is ', invoice)
-    // }
-
-    return await fetch('http://localhost:3004/api/transaction', {
-    // await fetch('http://transaction:1002/api/transaction', {
+    // return await fetch('http://localhost:3004/api/transaction', {
+    return await fetch('http://transaction:1002/api/transaction', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
@@ -20,13 +15,8 @@ exports.addTransaction = async(invoice) => {
 
 exports.removeTransaction = async(invoice) => {
 
-  // if (status === 'future') {
-  //     invoice.future = true
-  //     console.log('invoice is ', invoice)
-  // }
-
-    return await fetch('http://localhost:3004/api/transaction', {
-    // await fetch('http://transaction:1002/api/transaction', {
+    // return await fetch('http://localhost:3004/api/transaction', {
+    return await fetch('http://transaction:1002/api/transaction', {
     method: 'DELETE',
     headers: {
       'Accept': 'application/json',
@@ -38,13 +28,8 @@ exports.removeTransaction = async(invoice) => {
 
 exports.setTransactionAmount = async(invoice) => {
 
-  // if (status === 'future') {
-  //     invoice.future = true
-  //     console.log('invoice is ', invoice)
-  // }
-
-    return await fetch('http://localhost:3004/api/transaction/amount/set', {
-    // await fetch('http://transaction:1002/api/transaction', {
+    // return await fetch('http://localhost:3004/api/transaction/amount/set', {
+    return await fetch('http://transaction:1002/api/transaction/amount/set', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',

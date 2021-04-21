@@ -16,7 +16,7 @@ spec:
         - name: tag
           image: arthurws/tag
           ports:
-          - containerPort: 3003
+          - containerPort: 3005
           imagePullPolicy: Always
 ---
 apiVersion: v1
@@ -28,5 +28,5 @@ spec:
     app: tag
   ports:
     - port: 1001
-      targetPort: 3003
+      targetPort: 3005
   type: LoadBalancer
