@@ -4,6 +4,7 @@ const isValidationError = (error) => {
     return Joi.isError(error)
 }
 
+// Validation schema for an invoice
 const invoiceValidationSchema = Joi.object({
     sendDate: Joi.date().required(),
     dueDate: Joi.date().required(),

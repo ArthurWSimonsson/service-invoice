@@ -4,6 +4,8 @@ const transactionController = require('./transactionController');
 const {Saga} = require("../utils/saga");
 const mongoose = require('mongoose');
 
+// Adds an invoice to the invoice database.
+// Applies the Saga pattern when needed.
 exports.addInvoice = async invoice => {
 
     let saga = new Saga(); // {simulateFailure: {"create invoice": "Test error"}}
@@ -112,6 +114,7 @@ exports.addInvoice = async invoice => {
     }*/
 }
 
+// Gets all invoices.
 exports.getInvoices = async () => {
     try {
         const invoices = await Invoice.find();

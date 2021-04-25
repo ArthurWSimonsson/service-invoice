@@ -6,6 +6,7 @@ const exchangeController = require('../controllers/exchangeController')
 const clientController = require('../controllers/clientController')
 const transactionController = require('../controllers/transactionController')
 
+// Defines the route for handling invoice requests.
 const routes = async (app, options) => {
     app.post('/api/invoice', async (request, reply) => {
         try {

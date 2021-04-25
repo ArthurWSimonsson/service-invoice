@@ -1,10 +1,5 @@
-/* 
-Saga Options: {
-    preventFailedBegining (true) : Throw error when calling begin() after the Saga has failed
-    simulateFailure : Steps to fail
-} 
-*/
 
+// Code for Saga framework
 class Saga {
     constructor(options = {preventFailedBegining: true, simulateFailure: {}}) {
         this._failed = false;

@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 
+// Schema for an invoice
 const invoiceSchema = new mongoose.Schema({
     sendDate: {
         type: Date,
