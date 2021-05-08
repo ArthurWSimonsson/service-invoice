@@ -24,6 +24,7 @@ exports.addInvoice = async invoice => {
 
     try {
         //throw "ERROR1";
+        console.log("INVOICE:", result)
         if (!result)
             result = await new Invoice(invoice).save();
         
@@ -65,10 +66,10 @@ exports.addInvoice = async invoice => {
     try {
         //throw "ERROR3";
         result = await Invoice.findById(result._id);
-        totalPayed = result.payments.reduce((a, b) => a + b, 0);
-
-        if (totalPayed >= invoice.total)
+        totalPayed = result.payments.reduce((a, b) => {return a + b.amount}, 0);
+        if (totalPayed >= invoice.total, totalPayed) {
             await new PaidInvoice({ invoiceNr: invoiceNr, paidDate: new Date() }).save();
+        }
         updateInvoiceStep.success();
     }
     catch(err) {
@@ -88,11 +89,12 @@ exports.addInvoice = async invoice => {
         else if(!addTransactionResult.new && addTransactionResult.old)
             transactionController.setTransactionAmount(addTransactionResult.old)
     };
-
     try {
         //throw "ERROR4";
-        if (totalPayed < invoice.total)
-            addTransactionResult = await transactionController.addTransaction(result).data;
+        if (totalPayed < invoice.total) {
+            addTransactionResult = (await transactionController.addTransaction(result, invoice.tagName)).data;
+            console.log(addTransactionResult);
+        }
         addTransactionStep.success();
     }
     catch(err) {

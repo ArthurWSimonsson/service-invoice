@@ -12,7 +12,8 @@ const invoiceValidationSchema = Joi.object({
     invoiceNr: Joi.number().required(),
     total: Joi.number().required(),
     currency: Joi.string().required(),
-    payment: Joi.string()
+    payment: Joi.number(),
+    tagName: Joi.string()
 })
 
 module.exports = {

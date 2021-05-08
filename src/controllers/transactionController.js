@@ -1,17 +1,22 @@
 const fetch = require('node-fetch');
-
 // Does a request to the transaction service to add a transaction.
-exports.addTransaction = async(invoice) => {
+exports.addTransaction = async (invoice, tagName) => {
 
-    // return await fetch('http://localhost:3004/api/transaction', {
-    return await fetch('http://transaction:1002/api/transaction', {
+    let res = await fetch('http://localhost:3004/api/transaction', {
+    // await fetch('http://transaction:1002/api/transaction', {
     method: 'POST',
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json'
     },
-    body: JSON.stringify(invoice)
-  });
+    body: JSON.stringify({...invoice, tagName})
+  })
+  let result = await res.json();
+    
+  if(result.status != 200 || result.err) {
+    throw result.err;
+  }
+  return result;
 }
 
 // Does a request to the transaction service to delete a transaction.

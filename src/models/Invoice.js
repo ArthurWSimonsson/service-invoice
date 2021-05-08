@@ -41,8 +41,7 @@ const invoiceSchema = new mongoose.Schema({
 const paidInvoiceSchema = new mongoose.Schema({
     invoiceNr: {
         type: Number,
-        required: true,
-        unique: true
+        required: true
     },
     paidDate: Date
 })
