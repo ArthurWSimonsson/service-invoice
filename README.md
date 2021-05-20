@@ -9,7 +9,7 @@ CLIENT_URL =
 ```
 Where DB_CONNECT is a mongoDB database accessed through mongoose.<br/>
 PORT is which port the server is listening on.<br/>
-The remaining two are for the other services in the chain: <br/>
+The remaining two are for the other services in the chain, <br/>
 an example would be: ```TRANSACTION_URL = http://localhost:3004/api/transaction/```
 
 To run the service locally, only run ```npm start```
