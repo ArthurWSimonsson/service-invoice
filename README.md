@@ -1,8 +1,8 @@
 ## Test environment
 First the .env file needs to be set up. Follow the following template:
 
-```DB_CONNECT =
-   PORT = ```
+`DB_CONNECT =
+   PORT = `
 
 
 To run the service locally, only run ```npm start```
