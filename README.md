@@ -24,7 +24,7 @@ Using a program like Postman, use the following template as a request.
     "payment": 50
 } 
 ```
-For the chain to work without errors the other services needs to be set up. These are: 
-<br>https://github.com/ArthurWSimonsson/service-client  
-<br>https://github.com/ArthurWSimonsson/service-tag  
-<br>https://github.com/ArthurWSimonsson/service-transaction  
+For the chain to work without errors the other services needs to be set up. These are: <br/>
+https://github.com/ArthurWSimonsson/service-client  <br/>
+https://github.com/ArthurWSimonsson/service-tag  <br/>
+https://github.com/ArthurWSimonsson/service-transaction  <br/>
