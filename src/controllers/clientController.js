@@ -19,3 +19,14 @@ exports.addClientUUID = async (invoice) => {
     return invoice;
 }
 
+exports.deleteClient = async (invoice) => {
+    return await fetch(`http://localhost:3003/api/client/`, {
+        method: 'DELETE',
+        headers: {
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(invoice)
+      });
+}
+

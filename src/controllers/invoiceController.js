@@ -1,18 +1,20 @@
 const {Invoice, PaidInvoice} = require('../models/Invoice');
-const boom = require('boom');
 const transactionController = require('./transactionController');
-const {Saga} = require("../utils/saga");
+const clientController = require('./clientController');
+const {Saga} = require("saga-pattern");
+// const {Saga} = require("../utils/saga");
 const mongoose = require('mongoose');
 
 // Adds an invoice to the invoice database.
 // Applies the Saga pattern when needed.
 exports.addInvoice = async invoice => {
 
-    let saga = new Saga(); // {simulateFailure: {"create invoice": "Test error"}}
+    let saga = new Saga();
 
-    saga.onStepFailed = (s) => console.log(s);
+    saga.onStepFailed ((s) => console.log(s));
 
-    
+    invoice = await clientController.addClientUUID(invoice);
+
     let {invoiceNr} = invoice;
     let result;
 
@@ -20,11 +22,9 @@ exports.addInvoice = async invoice => {
     catch(err) { throw err; }
 
     let createInvoiceStep = saga.begin({name: "create invoice"});
-    createInvoiceStep.onRepair = async () => console.log( "REPAIR DEL", await Invoice.deleteOne({invoiceNr}) );
+    createInvoiceStep.onRepair (async () => console.log( "REPAIR DEL", await Invoice.deleteOne({invoiceNr}) ));
 
     try {
-        //throw "ERROR1";
-        console.log("INVOICE:", result)
         if (!result)
             result = await new Invoice(invoice).save();
         
@@ -32,18 +32,18 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         createInvoiceStep.fail(err);
-        throw err;//boom.boomify(err);
+        throw err;
     }
 
     let paymentObjectId = new mongoose.Types.ObjectId();
 
     let updatePaymentStep = saga.begin({name: "update payment"});
-    updatePaymentStep.onRepair = () => {
+    updatePaymentStep.onRepair (() => {
         Invoice.updateOne (
             { _id: result._id },
             { $pull: { payments: {_id: paymentObjectId} } }
         );
-    };
+    });
 
     try {
         //throw "ERROR2";
@@ -55,18 +55,19 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         updatePaymentStep.fail(err);
-        throw err;//boom.boomify(err);
+        throw err;
     }
 
     let totalPayed;
 
     let updateInvoiceStep = saga.begin({name: "update invoice"});
-    updateInvoiceStep.onRepair = () => PaidInvoice.deleteOne({invoiceNr});
+    updateInvoiceStep.onRepair (() => PaidInvoice.deleteOne({invoiceNr}));
 
     try {
         //throw "ERROR3";
         result = await Invoice.findById(result._id);
-        totalPayed = result.payments.reduce((a, b) => {return a + b.amount}, 0);
+        totalPayed = result.payments.reduce((a, b) => {
+            return a + b.amount}, 0);
         if (totalPayed >= invoice.total, totalPayed) {
             await new PaidInvoice({ invoiceNr: invoiceNr, paidDate: new Date() }).save();
         }
@@ -74,21 +75,21 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         updateInvoiceStep.fail(err);
-        throw err;//boom.boomify(err);
+        throw err;
     }
 
 
     let addTransactionResult;
 
     let addTransactionStep = saga.begin({name: "add transaction"});
-    addTransactionStep.onRepair = () => {
+    addTransactionStep.onRepair (() => {
         if(!addTransactionResult)
             return;
         if(addTransactionResult.new)
             transactionController.removeTransaction(result)
         else if(!addTransactionResult.new && addTransactionResult.old)
             transactionController.setTransactionAmount(addTransactionResult.old)
-    };
+    });
     try {
         //throw "ERROR4";
         if (totalPayed < invoice.total) {
@@ -99,21 +100,12 @@ exports.addInvoice = async invoice => {
     }
     catch(err) {
         addTransactionStep.fail(err);
-        throw err;//boom.boomify(err);
+        throw err;
     }
-
 
     await saga.promise();
 
     return result;
-
-
-    /*try {
-
-    }
-    catch(err) {
-        throw boom.boomify(err);
-    }*/
 }
 
 // Gets all invoices.
@@ -123,6 +115,6 @@ exports.getInvoices = async () => {
         return invoices;
     }
     catch(err) {
-        throw err;//boom.boomify(err);
+        throw err;
     }
 }

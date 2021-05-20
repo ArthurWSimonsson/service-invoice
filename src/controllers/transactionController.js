@@ -12,7 +12,7 @@ exports.addTransaction = async (invoice, tagName) => {
     body: JSON.stringify({...invoice, tagName})
   })
   let result = await res.json();
-    
+
   if(result.status != 200 || result.err) {
     throw result.err;
   }

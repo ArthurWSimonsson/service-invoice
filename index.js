@@ -1,16 +1,10 @@
-const fastify = require('./server.js')
-const gql = require('fastify-gql')
-const schema = require('./schema')
+const fastify = require('./src/server.js')
+require("dotenv").config();
 
-
-fastify.register(gql, {
-    schema,
-    graphiql: true
- })
 
 const start = async () => {
     try {
-        await fastify.listen(3002, '0.0.0.0')
+        await fastify.listen(process.env.PORT, '0.0.0.0')
         fastify.log.info(`server listening on ${fastify.server.address().port}`)
     } 
     catch (err) {
