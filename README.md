@@ -25,6 +25,6 @@ Using a program like Postman, use the following template as a request.
 } 
 ```
 For the chain to work without errors the other services needs to be set up. These are: 
-https://github.com/ArthurWSimonsson/service-client  
-https://github.com/ArthurWSimonsson/service-tag  
-https://github.com/ArthurWSimonsson/service-transaction  
+<br>https://github.com/ArthurWSimonsson/service-client  
+<br>https://github.com/ArthurWSimonsson/service-tag  
+<br>https://github.com/ArthurWSimonsson/service-transaction  
