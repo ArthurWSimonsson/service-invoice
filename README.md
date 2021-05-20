@@ -1,4 +1,21 @@
+## Test environment
+First the .env file needs to be set up. Follow the following template:
 
-# HOW TO SET UP TEST ENVIRONMENT
+```DB_CONNECT =
+   PORT = ```
 
-To set up the test environment, run the following  command, `kubectl apply -f kube`. First, please add an environment variable to each service with the correct database url called DB_CONNECT. It should use a MongoDB database hosted on Atlas. The idea is that each service has its own database.
+
+To run the service locally, only run ```npm start```
+
+
+Using a program like Postman, use the following template as a request.
+
+``` {
+    "sendDate": 2012,
+    "dueDate": 2013,
+    "clientNr" : 3,
+    "invoiceNr": 8,
+    "total": 100000,
+    "currency": "SEK",
+    "payment": 50
+} ```
